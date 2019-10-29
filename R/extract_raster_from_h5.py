@@ -6,8 +6,7 @@ import ogr, os
 
 
 def h5refl2array(full_path, epsg):
-    refl_filename = full_path
-    hdf5_file = h5py.File(refl_filename, 'r')
+    hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
     file_attrs_string_split = file_attrs_string.split("'")
     sitename = file_attrs_string_split[1]
