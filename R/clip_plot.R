@@ -51,7 +51,7 @@ clip_plot <- function(plt, list_data, which_python = "pyenv", bff=22){
       #get epsg from h5
       epsg <- get_epsg_from_utm(plt[["utmZone"]])
       #convert h5 into a tif for the extent of the plot using python
-      use_condaenv(which_python, required = T)
+      use_virtualenv(which_python, required = T)
       #check if the libraries required are installed in the virtual environment
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")

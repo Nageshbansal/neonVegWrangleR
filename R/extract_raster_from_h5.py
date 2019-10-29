@@ -5,7 +5,7 @@ import sys
 import ogr, os
 
 
-def h5refl2array(refl_filename, epsg):
+def h5refl2array(full_path, refl_filename, epsg):
     refl_filename = full_path
     hdf5_file = h5py.File(refl_filename, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
