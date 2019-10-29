@@ -135,7 +135,7 @@ def calc_clip_index(clipExtent, h5Extent, xscale=1, yscale=1):
 
 def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/hsi/'):
 
-    print(itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg)
+    #print(itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg)
     #extract array in h5
     refl_md, refl = h5refl2array(full_path, epsg = epsg)
     
@@ -145,21 +145,21 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
     rgb = np.delete(rgb, np.r_[283:315])
     rgb = np.delete(rgb, np.r_[192:210])
     xmin, xmax, ymin, ymax = refl_md['extent']
-    print(xmin, xmax, ymin, ymax)
+    #print(xmin, xmax, ymin, ymax)
     #get extent 
     clipExtent = {}
     clipExtent['xMin'] = itc_xmin
     clipExtent['yMin'] = itc_ymin
     clipExtent['yMax'] = itc_ymax
     clipExtent['xMax'] = itc_xmax
-    print(clipExtent)
+    #print(clipExtent)
     #and then define which cell arrays they belong to
     subInd = calc_clip_index(clipExtent, refl_md['ext_dict'])
     subInd['xMax'] = int(subInd['xMax'])
     subInd['xMin'] = int(subInd['xMin'])
     subInd['yMax'] = int(subInd['yMax'])
     subInd['yMin'] = int(subInd['yMin'])
-    print(subInd)
+    #print(subInd)
     
     refl = refl[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax'], :]
     refl.shape
