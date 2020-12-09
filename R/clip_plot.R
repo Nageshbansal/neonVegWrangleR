@@ -7,21 +7,39 @@
 #' @examples from_inventory_to_shp()
 #' @importFrom magrittr "%>%"
 #' @import sf, reticulate, stringr
-clip_plot <- function(plt, list_data, which_python = "pyenv", bff=22){
+clip_plot <- function(plt, list_data, 
+                      which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python", 
+                      bff=20, 
+                      outdir = "//orange/idtrees-collab/sarah_test_plots/"
+                      #outdir = "///orange/ewhite/s.marconi/brdf_traits//plots_hsi_corrected/"
+){
+  library(lidR)
+  library(stringr)
+  library(reticulate)
+  get_epsg_from_utm <- function(utm){
+    utm <-  substr(utm,1,nchar(utm)-1)
+    if(as.numeric(utm)<10)utm <- paste('0', utm, sep="")
+    epsg <- paste("326", utm, sep="")
+    return(epsg)
+  }
+  
+  #source("./R/get_epsg_from_utm.R")
   # get tile for the plot
   plt <- data.frame(t(plt), stringsAsFactors=F)
   #convert plots coordinates from character to numeric
   plt[["easting"]]<- as.numeric(plt[["easting"]])
   plt[["northing"]]<- as.numeric(plt[["northing"]])
-
+  
   tile <- paste(plt[["plt_e"]], plt[["plt_n"]], sep="_")
   tile <- grep(tile, list_data, value = TRUE)
   missed_plots <- list()
   #in case of multiple data products per neon product
   for(f in tile){
+    tryCatch({
     #load raster or las file
     if(substr(f, nchar(f)-4+1, nchar(f))==".tif"){
       prd = substr(f, nchar(f)-8+1, nchar(f)-4)
+      #prd = "bdrf"
       f<-raster::brick(f)
       #get object with  extent of plot center + buffer
       e <- raster::extent(plt[["easting"]] - bff,
@@ -31,7 +49,7 @@ clip_plot <- function(plt, list_data, which_python = "pyenv", bff=22){
       #crop
       tif <- raster::crop(f, e)
       #and save
-      raster::writeRaster(tif,  paste("./outdir/plots/", prd, "/",
+      raster::writeRaster(tif,  paste(outdir, prd, "/",
                                       plt[1,1], ".tif", sep=""), overwrite=TRUE)
     }else if(substr(f, nchar(f)-4+1, nchar(f))==".laz"){
       #skip files in metadata
@@ -39,35 +57,36 @@ clip_plot <- function(plt, list_data, which_python = "pyenv", bff=22){
         #read pointcloud
         f <- lidR::readLAS(f)
         #clip by extent
-        las <- lasclipRectangle(f, xleft = plt[["easting"]] - bff,
-                                ybottom=plt[["northing"]] - bff,
-                                xright=plt[["easting"]] + bff,
-                                ytop=plt[["northing"]] + bff)
+        las <- lidR::lasclipRectangle(f, xleft = plt[["easting"]] - bff,
+                                      ybottom=plt[["northing"]] - bff,
+                                      xright=plt[["easting"]] + bff,
+                                      ytop=plt[["northing"]] + bff)
         #and save
-        writeLAS(las, paste("./outdir/plots/las/",
-                            plt[1,1], ".las", sep=""))
+        lidR::writeLAS(las, paste(outdir, "/las/", #./outdir/plots/las/",
+                                  plt[1,1], ".las", sep=""))
       }
     }else if(substr(f, nchar(f)-3+1, nchar(f))==".h5"){
       #get epsg from h5
       epsg <- get_epsg_from_utm(plt[["utmZone"]])
       #convert h5 into a tif for the extent of the plot using python
-      use_virtualenv(which_python, required = T)
+      use_python(which_python, required = T)
       #check if the libraries required are installed in the virtual environment
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")
-      tryCatch({
-        h5_to_tif <- extract_hsi(f,
-                                 plt[1,1],
-                                 plt[["easting"]] - bff,
-                                 plt[["easting"]] + bff,
-                                 plt[["northing"]] - bff,
-                                 plt[["northing"]] + bff,
-                                 epsg,
-                                 ras_dir = './outdir/plots/hsi/')
-      }, error = function(e) {
-        missed_plots[[plt[1,1]]] <- c(f, plt[1,1], plt[["easting"]], plt[["northing"]])
-      })
+      
+      h5_to_tif <- extract_hsi(f,
+                               plt[1,1],
+                               plt[["easting"]] - bff,
+                               plt[["easting"]] + bff,
+                               plt[["northing"]] - bff,
+                               plt[["northing"]] + bff,
+                               epsg,
+                               ras_dir = paste(outdir, "/hsi/", sep="")) #
+      #ras_dir = './outdir/plots/hsi/')
     }
+    }, error = function(e) {
+      missed_plots[[plt[1,1]]] <- c(f, plt[1,1], plt[["easting"]], plt[["northing"]])
+    })
   }
   return(missed_plots)
 }
