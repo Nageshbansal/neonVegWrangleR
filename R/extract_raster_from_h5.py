@@ -348,7 +348,7 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
   
 
 
-def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/hsi/', ross="thick", li="dense"):
+def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', ross="thick", li="dense"):
     from pathlib import Path
     import numpy as np
     import h5py
@@ -392,6 +392,7 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     sns_zn = sns_zn[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     slope = slope[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     aspect = aspect[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    print(refl.shape)
     # mask away bad pixels
     ndvi = (refl[:, :,90] - refl[:,:,58])/(refl[:, :,58] +refl[:, :,90]) > 0.2
     nir860 = (refl[:, :,96] + refl[:, :,97])/20000 > 0.1
