@@ -348,7 +348,7 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
   
 
 
-def create_tiff_datasets(full_path, wd, epsg, ross, li):
+def extract_hsi_brdf_corrected(ffull_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/hsi/', ross, li):
     from pathlib import Path
     import numpy as np
     import h5py
@@ -371,10 +371,10 @@ def create_tiff_datasets(full_path, wd, epsg, ross, li):
     rgb = np.delete(rgb, np.r_[191:211])
     xmin, xmax, ymin, ymax = refl_md['extent']
  #   
-    itc_xmin = xmin
-    itc_ymin = ymin
-    itc_ymax = ymax
-    itc_xmax = xmax
+    # itc_xmin = xmin
+    # itc_ymin = ymin
+    # itc_ymax = ymax
+    # itc_xmax = xmax
 #
     clipExtent = {}
     clipExtent['xMin'] = itc_xmin
@@ -449,7 +449,7 @@ def create_tiff_datasets(full_path, wd, epsg, ross, li):
     #save hcp into a tiff file [reflectance]
     sub_meta = refl_md
     #wd = "/orange/ewhite/s.marconi/Chapter1/2015_Campaign/D03/OSBS/L4/"
-    itc_id = sitename +"_" + str(int(itc_xmin/1000)*1000) + "_" + str(int(itc_ymin/1000)*1000)
+    itc_id = sitename +"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin))
     ii = itc_id + "_" + '.tif'
     #ras_dir = wd+"/HSI/"
     #array2raster(ii, hcp, sub_meta, clipExtent, ras_dir)
