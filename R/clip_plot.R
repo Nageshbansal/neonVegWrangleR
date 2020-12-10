@@ -10,7 +10,7 @@
 clip_plot <- function(plt, list_data,
                       which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python",
                       bff=20,
-                      outdir = "//blue/ewhite/s.marconi/Chapter3/neonVegWrangleR/"
+                      outdir = "////orange/ewhite/s.marconi/brdf_classification/"
                       #outdir = "///orange/ewhite/s.marconi/brdf_traits//plots_hsi_corrected/"
 ){
   library(lidR)
@@ -71,6 +71,7 @@ clip_plot <- function(plt, list_data,
       #convert h5 into a tif for the extent of the plot using python
       use_python(which_python, required = T)
       #check if the libraries required are installed in the virtual environment
+      setwd("//blue/ewhite/s.marconi/Chapter3/neonVegWrangleR")
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")
       year = unlist(strsplit(f,split = "/FullSite/"))[[1]]
@@ -83,7 +84,7 @@ clip_plot <- function(plt, list_data,
                                plt[["northing"]] + bff,
                                epsg,
                                ras_dir = paste(outdir, "/brdf/", sep=""),
-                               year = year) #
+                               year = as.character(year)) #
       #ras_dir = './outdir/plots/hsi/')
     }
     }, error = function(e) {
