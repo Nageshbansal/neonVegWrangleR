@@ -5,11 +5,25 @@ Created on Wed Apr 29 17:32:00 2020
 
 @author: sergiomarconi
 """
-
+from pathlib import Path
+import numpy as np
+import h5py
+import gdal, osr
+import matplotlib.pyplot as plt
+import sys
+import ogr, os
+import math
+import pandas as pd
+from math import pi
+import random
+import string
+import warnings
 
 # coding: utf-8
 def generate_geom_kernel(solar_az,solar_zn,sensor_az,sensor_zn,li):
     from math import pi
+    import numpy as np
+    import pandas as pd
     '''Calculate the Li geometric scattering kernel. 
     Parameters
     ----------
@@ -68,6 +82,8 @@ def generate_volume_kernel(solar_az,solar_zn,sensor_az,sensor_zn, ross):
     Volume scattering kernel as m x n numpy array
     ''' 
     from math import pi
+    import numpy as np
+    import pandas as pd
     relative_az = sensor_az - solar_az 
     #Ross kernels 
     ############
@@ -103,6 +119,8 @@ def generate_brdf_coeffs_band(bnd, mask, k_vol,k_geom, topo_x): #
                 BRDF coefficients
     '''
  #   
+    import numpy as np
+    import pandas as pd
     # Mask kernels
     k_vol = k_vol[mask]
     k_geom = k_geom[mask]
@@ -125,6 +143,8 @@ def generate_brdf_coeffs_band(bnd, mask, k_vol,k_geom, topo_x): #
 
 def tile_solar_angle(full_path):
     import h5py
+    import numpy as np
+    import pandas as pd
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
     file_attrs_string_split = file_attrs_string.split("'")
@@ -154,6 +174,8 @@ def print_attrs(name, obj):
 
 def h5refl2array(full_path, epsg):
     import h5py
+    import numpy as np
+    import pandas as pd
     #refl, refl_md, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect = h5refl2array(full_path, epsg = epsg)
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
@@ -219,6 +241,8 @@ def h5refl2array(full_path, epsg):
 
 
 def stack_subset_bands(reflArray, reflArray_metadata, bands, clipIndex):
+    import numpy as np
+    import pandas as pd
     subArray_rows = clipIndex['yMax'] - clipIndex['yMin']
     subArray_cols = clipIndex['xMax'] - clipIndex['xMin']
 #
@@ -244,6 +268,9 @@ def subset_clean_band(reflArray, reflArray_metadata, clipIndex, bandIndex):
 
 
 def array2raster(newRaster, reflBandArray, reflArray_metadata, extent, ras_dir, epsg):
+    import numpy as np
+    import pandas as pd
+    import os
     NP2GDAL_CONVERSION = {
         "uint8": 1,
         "int8": 1,
