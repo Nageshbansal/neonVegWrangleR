@@ -553,35 +553,38 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     subArray_rows = subInd['yMax'] - subInd['yMin']
     subArray_cols = subInd['xMax'] - subInd['xMin']
     #hcp = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
-    brd = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
+    hcp = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
+ #   
+    #load info in multi-layer array
     band_clean_dict = {}
     band_clean_names = []
-    brdf_coeffs = []
-    topo_coeffs = [] 
-    #mask = np.squeeze(mask)
     for i in range(len(rgb)):
         band_clean_names.append("b" + str([i]) + "_refl_clean")
-        bnd = refl[:, :, [i]].astype(np.int16)
-        band_clean_dict[band_clean_names[i]] = bnd
-        #apply brdf and topographic correction
-        #bnd = bnd/10000
-        bnd = np.squeeze(bnd)
-        bnd[~np.squeeze(mask)] = np.nan
-        brd[..., i] = bnd.astype('int')
+        band_clean_dict[band_clean_names[i]] = np.squeeze(refl[:, :, [i]].astype(np.int16))
+        hcp[..., i] = band_clean_dict[band_clean_names[i]]
     #
     #
+    print(hcp.shape)
    #save hcp into a tiff file [reflectance]
     sub_meta = refl_md
     itc_id =  str(int(year)) + "_"+ itc_id #+"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
-    ii = itc_id + '.tif'
+    ii = str(itc_id + ".tif")
     #ras_dir = wd+"/corrHSI"
-    array2raster(ii, brd, sub_meta, clipExtent, ras_dir = ras_dir+"/hsi/", epsg = int(refl_md['epsg']))
+    print(hcp.shape)
+    array2raster(str(ii), hcp, sub_meta, clipExtent, ras_dir = str(ras_dir+"/hsi/"), epsg = int(refl_md['epsg']))
     #save sensor and solar angles, slope and aspect for the same plot
-    array2raster(ii, slope, sub_meta, clipExtent, ras_dir = ras_dir+"/slope/", epsg = int(refl_md['epsg']))
-    array2raster(ii, aspect, sub_meta, clipExtent, ras_dir = ras_dir+"/aspect/", epsg = int(refl_md['epsg']))
-    array2raster(ii, sns_az, sub_meta, clipExtent, ras_dir = ras_dir+"/sns_az/", epsg = int(refl_md['epsg']))
-    array2raster(ii, sns_zn, sub_meta, clipExtent, ras_dir = ras_dir+"/sns_zn/", epsg = int(refl_md['epsg']))
-    array2raster(ii, sol_az, sub_meta, clipExtent, ras_dir = ras_dir+"/sol_az/", epsg = int(refl_md['epsg']))
-    array2raster(ii, sol_zn, sub_meta, clipExtent, ras_dir = ras_dir+"/sol_zn/", epsg = int(refl_md['epsg']))
+    #print("slope:     " + slope.shape)
+    array2raster(ii, slope.reshape([slope.shape[0],slope.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/slope/"), epsg = int(refl_md['epsg']))
+    #print("aspect:     " + aspect.shape)
+    array2raster(ii, aspect.reshape([aspect.shape[0],aspect.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/aspect/"), epsg = int(refl_md['epsg']))
+    #print("sns_az:     " + sns_az.shape)
+    array2raster(ii, sns_az.reshape([sns_az.shape[0],sns_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_az/"), epsg = int(refl_md['epsg']))
+    #print("sns_zn:     " + sns_zn.shape)
+    array2raster(ii, sns_zn.reshape([sns_zn.shape[0],sns_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_zn/"), epsg = int(refl_md['epsg']))
+    #print("sol_az:     " + sol_az.shape)
+    array2raster(ii, sol_az.reshape([sol_az.shape[0],sol_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_az/"), epsg = int(refl_md['epsg']))
+    #print("sol_zn:     " + sol_zn.shape)
+    array2raster(ii, sol_zn.reshape([sol_zn.shape[0],sol_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_zn/"), epsg = int(refl_md['epsg']))
+    
 
- 
+extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense")
