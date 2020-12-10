@@ -478,3 +478,110 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     #     print("ATTENTION!!")
     #     print("tile "+full_path)
 #     print("end exception")
+
+
+def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense"):
+    from pathlib import Path
+    import numpy as np
+    import h5py
+    import gdal, osr
+    import matplotlib.pyplot as plt
+    import sys
+    import ogr, os
+    import math
+    import pandas as pd
+    from math import pi
+    import random
+    import string
+    import warnings
+    warnings.filterwarnings("ignore")
+    # try:
+    refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect = h5refl2array(full_path, epsg = epsg)
+    rgb = np.r_[0:425]
+    rgb = np.delete(rgb, np.r_[419:426])
+    rgb = np.delete(rgb, np.r_[281:313])
+    rgb = np.delete(rgb, np.r_[191:211])
+    xmin, xmax, ymin, ymax = refl_md['extent']
+    #   
+    # itc_xmin = xmin
+    # itc_ymin = ymin
+    # itc_ymax = ymax
+    # itc_xmax = xmax
+    #
+    clipExtent = {}
+    clipExtent['xMin'] = itc_xmin
+    clipExtent['yMin'] = itc_ymin
+    clipExtent['yMax'] = itc_ymax
+    clipExtent['xMax'] = itc_xmax
+    print(clipExtent)
+    subInd = calc_clip_index(clipExtent, refl_md['ext_dict'])
+    subInd['xMax'] = int(subInd['xMax'])
+    subInd['xMin'] = int(subInd['xMin'])
+    subInd['yMax'] = int(subInd['yMax'])
+    subInd['yMin'] = int(subInd['yMin'])
+    refl = refl[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax'],rgb]
+    sns_az = sns_az[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    sns_zn = sns_zn[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    sol_az = sol_az[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    sol_zn = sol_zn[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    slope = slope[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    aspect = aspect[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    print(refl.shape)
+    # mask away bad pixels
+    ndvi = (refl[:, :,90] - refl[:,:,58])/(refl[:, :,58] +refl[:, :,90]) > 0.2
+    nir860 = (refl[:, :,96] + refl[:, :,97])/20000 > 0.1
+    mask = (sns_zn < 10000)  * (aspect < 10000) *  (slope < 10000) * (sns_az < 10000) * ndvi * nir860
+    #
+    # convert degrees in radiants
+    slope = (slope * pi) / 180
+    aspect  = (aspect * pi) / 180
+    sns_az  = (sns_az * pi) / 180
+    sns_zn  = (sns_zn * pi) / 180
+    sol_az = (sol_az[0] * pi) / 180
+    sol_zn = (sol_zn[0] * pi) / 180
+    # topographic correction
+    rel_az = aspect - sol_az
+    cos_i = np.cos(sol_zn) * np.cos(slope) + np.sin(sol_zn) * np.sin(slope) * np.cos(rel_az)
+    c1 =  np.cos(sol_zn) * np.cos(slope)
+    # Generate scattering kernels
+    k_vol = generate_volume_kernel(sol_az, sol_zn, sns_az,sns_zn, ross = ross)
+    k_geom = generate_geom_kernel(sol_az, sol_zn, sns_az,sns_zn,li = li)
+    # Generate scattering kernels at Nadir
+    k_vol_nadir = generate_volume_kernel(sol_az, sol_zn, sns_az,0, ross = ross)
+    k_geom_nadir = generate_geom_kernel(sol_az, sol_zn, sns_az,0,li = li)
+    #
+    subArray_rows = subInd['yMax'] - subInd['yMin']
+    subArray_cols = subInd['xMax'] - subInd['xMin']
+    #hcp = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
+    brd = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
+    band_clean_dict = {}
+    band_clean_names = []
+    brdf_coeffs = []
+    topo_coeffs = [] 
+    #mask = np.squeeze(mask)
+    for i in range(len(rgb)):
+        band_clean_names.append("b" + str([i]) + "_refl_clean")
+        bnd = refl[:, :, [i]].astype(np.int16)
+        band_clean_dict[band_clean_names[i]] = bnd
+        #apply brdf and topographic correction
+        #bnd = bnd/10000
+        bnd = np.squeeze(bnd)
+        bnd[~np.squeeze(mask)] = np.nan
+        brd[..., i] = bnd.astype('int')
+    #
+    #
+   #save hcp into a tiff file [reflectance]
+    sub_meta = refl_md
+    itc_id =  str(int(year)) + "_"+ itc_id #+"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
+    ii = itc_id + '.tif'
+    #ras_dir = wd+"/corrHSI"
+    array2raster(ii, brd, sub_meta, clipExtent, ras_dir = ras_dir+"/hsi/", epsg = int(refl_md['epsg']))
+    #save sensor and solar angles, slope and aspect for the same plot
+    array2raster(ii, slope, sub_meta, clipExtent, ras_dir = ras_dir+"/slope/", epsg = int(refl_md['epsg']))
+    array2raster(ii, aspect, sub_meta, clipExtent, ras_dir = ras_dir+"/aspect/", epsg = int(refl_md['epsg']))
+    array2raster(ii, sns_az, sub_meta, clipExtent, ras_dir = ras_dir+"/sns_az/", epsg = int(refl_md['epsg']))
+    array2raster(ii, sns_zn, sub_meta, clipExtent, ras_dir = ras_dir+"/sns_zn/", epsg = int(refl_md['epsg']))
+    array2raster(ii, sol_az, sub_meta, clipExtent, ras_dir = ras_dir+"/sol_az/", epsg = int(refl_md['epsg']))
+    array2raster(ii, sol_zn, sub_meta, clipExtent, ras_dir = ras_dir+"/sol_zn/", epsg = int(refl_md['epsg']))
+
+ 
