@@ -9,6 +9,7 @@ Created on Wed Apr 29 17:32:00 2020
 
 # coding: utf-8
 def generate_geom_kernel(solar_az,solar_zn,sensor_az,sensor_zn,li):
+    from math import pi
     '''Calculate the Li geometric scattering kernel. 
     Parameters
     ----------
@@ -66,6 +67,7 @@ def generate_volume_kernel(solar_az,solar_zn,sensor_az,sensor_zn, ross):
     -------
     Volume scattering kernel as m x n numpy array
     ''' 
+    from math import pi
     relative_az = sensor_az - solar_az 
     #Ross kernels 
     ############
