@@ -21,9 +21,6 @@ import warnings
 
 # coding: utf-8
 def generate_geom_kernel(solar_az,solar_zn,sensor_az,sensor_zn,li):
-    from math import pi
-    import numpy as np
-    import pandas as pd
     '''Calculate the Li geometric scattering kernel. 
     Parameters
     ----------
@@ -81,9 +78,6 @@ def generate_volume_kernel(solar_az,solar_zn,sensor_az,sensor_zn, ross):
     -------
     Volume scattering kernel as m x n numpy array
     ''' 
-    from math import pi
-    import numpy as np
-    import pandas as pd
     relative_az = sensor_az - solar_az 
     #Ross kernels 
     ############
@@ -119,8 +113,6 @@ def generate_brdf_coeffs_band(bnd, mask, k_vol,k_geom, topo_x): #
                 BRDF coefficients
     '''
  #   
-    import numpy as np
-    import pandas as pd
     # Mask kernels
     k_vol = k_vol[mask]
     k_geom = k_geom[mask]
@@ -142,9 +134,6 @@ def generate_brdf_coeffs_band(bnd, mask, k_vol,k_geom, topo_x): #
     
 
 def tile_solar_angle(full_path):
-    import h5py
-    import numpy as np
-    import pandas as pd
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
     file_attrs_string_split = file_attrs_string.split("'")
@@ -173,9 +162,6 @@ def print_attrs(name, obj):
 
 
 def h5refl2array(full_path, epsg):
-    import h5py
-    import numpy as np
-    import pandas as pd
     #refl, refl_md, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect = h5refl2array(full_path, epsg = epsg)
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
@@ -241,8 +227,6 @@ def h5refl2array(full_path, epsg):
 
 
 def stack_subset_bands(reflArray, reflArray_metadata, bands, clipIndex):
-    import numpy as np
-    import pandas as pd
     subArray_rows = clipIndex['yMax'] - clipIndex['yMin']
     subArray_cols = clipIndex['xMax'] - clipIndex['xMin']
 #
@@ -376,7 +360,7 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
   
 
 
-def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', year = "NA", ross="thick", li="dense"):
+def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense"):
     from pathlib import Path
     import numpy as np
     import h5py
@@ -479,8 +463,8 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     #brdf_df.to_csv(wd+"/test_brdf.csv")
     #save hcp into a tiff file [reflectance]
     sub_meta = refl_md
-    #wd = "/orange/ewhite/s.marconi/Chapter1/2015_Campaign/D03/OSBS/L4/" str(int(year)) +
-    itc_id =  "_"+ itc_id +"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
+    #wd = "/orange/ewhite/s.marconi/Chapter1/2015_Campaign/D03/OSBS/L4/" 
+    itc_id =  str(int(year)) + "_"+ itc_id +"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
     ii = itc_id + '.tif'
     #ras_dir = wd+"/HSI/"
     #array2raster(ii, hcp, sub_meta, clipExtent, ras_dir)
