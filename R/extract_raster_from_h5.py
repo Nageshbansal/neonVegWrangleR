@@ -268,9 +268,6 @@ def subset_clean_band(reflArray, reflArray_metadata, clipIndex, bandIndex):
 
 
 def array2raster(newRaster, reflBandArray, reflArray_metadata, extent, ras_dir, epsg):
-    import numpy as np
-    import pandas as pd
-    import os
     NP2GDAL_CONVERSION = {
         "uint8": 1,
         "int8": 1,
