@@ -124,6 +124,7 @@ def generate_brdf_coeffs_band(bnd, mask, k_vol,k_geom, topo_x): #
     
 
 def tile_solar_angle(full_path):
+    import h5py
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))
     file_attrs_string_split = file_attrs_string.split("'")
@@ -152,6 +153,7 @@ def print_attrs(name, obj):
 
 
 def h5refl2array(full_path, epsg):
+    import h5py
     #refl, refl_md, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect = h5refl2array(full_path, epsg = epsg)
     hdf5_file = h5py.File(full_path, 'r')
     file_attrs_string = str(list(hdf5_file.items()))

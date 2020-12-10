@@ -10,7 +10,7 @@
 clip_plot <- function(plt, list_data,
                       which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python",
                       bff=20,
-                      outdir = "//orange/ewhite/s.marconi/brdf_classification/"
+                      outdir = "//blue/ewhite/s.marconi/Chapter3/neonVegWrangleR/"
                       #outdir = "///orange/ewhite/s.marconi/brdf_traits//plots_hsi_corrected/"
 ){
   library(lidR)
@@ -83,7 +83,7 @@ clip_plot <- function(plt, list_data,
                                plt[["northing"]] + bff,
                                epsg,
                                ras_dir = paste(outdir, "/brdf/", sep=""),
-                               year) #
+                               year = year) #
       #ras_dir = './outdir/plots/hsi/')
     }
     }, error = function(e) {
