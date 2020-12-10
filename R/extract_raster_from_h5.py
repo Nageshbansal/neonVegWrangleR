@@ -278,7 +278,7 @@ def array2raster(newRaster, reflBandArray, reflArray_metadata, extent, ras_dir, 
     driver = gdal.GetDriverByName('GTiff')
     gdaltype = NP2GDAL_CONVERSION[reflBandArray.dtype.name]
     print(gdaltype)
-    print(newRaster.shape)
+    print(newRaster)
     print(cols, rows, bands)
     outRaster = driver.Create(newRaster, cols, rows, bands, gdaltype)
     outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
