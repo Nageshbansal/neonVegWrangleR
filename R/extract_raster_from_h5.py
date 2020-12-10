@@ -370,12 +370,12 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     rgb = np.delete(rgb, np.r_[281:313])
     rgb = np.delete(rgb, np.r_[191:211])
     xmin, xmax, ymin, ymax = refl_md['extent']
- #   
+    #   
     # itc_xmin = xmin
     # itc_ymin = ymin
     # itc_ymax = ymax
     # itc_xmax = xmax
-#
+    #
     clipExtent = {}
     clipExtent['xMin'] = itc_xmin
     clipExtent['yMin'] = itc_ymin
@@ -387,9 +387,11 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     subInd['xMin'] = int(subInd['xMin'])
     subInd['yMax'] = int(subInd['yMax'])
     subInd['yMin'] = int(subInd['yMin'])
-    refl = refl[:,(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    refl = refl[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax'],rgb]
     sns_az = sns_az[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     sns_zn = sns_zn[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    sol_az = sol_az[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    sol_zn = sol_zn[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     slope = slope[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     aspect = aspect[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
     print(refl.shape)
@@ -426,8 +428,8 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     topo_coeffs = [] 
     #mask = np.squeeze(mask)
     for i in range(len(rgb)):
-        band_clean_names.append("b" + str(rgb[i]) + "_refl_clean")
-        bnd = refl[:, :, rgb[i]].astype(np.int16)
+        band_clean_names.append("b" + str([i]) + "_refl_clean")
+        bnd = refl[:, :, [i]].astype(np.int16)
         band_clean_dict[band_clean_names[i]] = bnd
         #hcp[..., i] = band_clean_dict[band_clean_names[i]]
         #calculate brfd coefficients
@@ -440,13 +442,13 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
         bdrf_cor = brdf_nd/brdf
         topo_cor = (c1 + ith_topo) / (cos_i + ith_topo) 
         #bnd = bnd/10000
-        bnd = bnd * np.squeeze(bdrf_cor*topo_cor)
+        bnd = np.squeeze(bnd) * np.squeeze(bdrf_cor*topo_cor)
         bnd[~np.squeeze(mask)] = np.nan
         brd[..., i] = bnd.astype('int')
     #
     #
-    brdf_df =  pd.DataFrame(brdf_coeffs,columns=['k_vol','k_geom','k_iso'])
-    brdf_df.to_csv(wd+"/test_brdf.csv")
+    #brdf_df =  pd.DataFrame(brdf_coeffs,columns=['k_vol','k_geom','k_iso'])
+    #brdf_df.to_csv(wd+"/test_brdf.csv")
     #save hcp into a tiff file [reflectance]
     sub_meta = refl_md
     #wd = "/orange/ewhite/s.marconi/Chapter1/2015_Campaign/D03/OSBS/L4/"
@@ -455,9 +457,9 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     #ras_dir = wd+"/HSI/"
     #array2raster(ii, hcp, sub_meta, clipExtent, ras_dir)
     #
-    ras_dir = wd+"/corrHSI"
+    #ras_dir = wd+"/corrHSI"
     array2raster(ii, brd, sub_meta, clipExtent, ras_dir = ras_dir, epsg = int(refl_md['epsg']))
-# except:
-#     print("ATTENTION!!")
-#     print("tile "+full_path)
+    # except:
+    #     print("ATTENTION!!")
+    #     print("tile "+full_path)
 #     print("end exception")
