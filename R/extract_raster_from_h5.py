@@ -348,7 +348,7 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
   
 
 
-def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', year = year, ross="thick", li="dense"):
+def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', year, ross="thick", li="dense"):
     from pathlib import Path
     import numpy as np
     import h5py
