@@ -348,7 +348,7 @@ def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg,
   
 
 
-def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', ross="thick", li="dense"):
+def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/brdf/', ross="thick", li="dense", year):
     from pathlib import Path
     import numpy as np
     import h5py
@@ -452,7 +452,7 @@ def extract_hsi_brdf_corrected(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, 
     #save hcp into a tiff file [reflectance]
     sub_meta = refl_md
     #wd = "/orange/ewhite/s.marconi/Chapter1/2015_Campaign/D03/OSBS/L4/"
-    itc_id = sitename +"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin))
+    itc_id = year + "_"+sitename +"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin))
     ii = itc_id + "_" + '.tif'
     #ras_dir = wd+"/HSI/"
     #array2raster(ii, hcp, sub_meta, clipExtent, ras_dir)

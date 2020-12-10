@@ -7,10 +7,10 @@
 #' @examples from_inventory_to_shp()
 #' @importFrom magrittr "%>%"
 #' @import sf, reticulate, stringr
-clip_plot <- function(plt, list_data, 
-                      which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python", 
-                      bff=20, 
-                      outdir = "//orange/idtrees-collab/sarah_test_plots/"
+clip_plot <- function(plt, list_data,
+                      which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python",
+                      bff=20,
+                      outdir = "//orange/ewhite/s.marconi/brdf_classification/"
                       #outdir = "///orange/ewhite/s.marconi/brdf_traits//plots_hsi_corrected/"
 ){
   library(lidR)
@@ -22,14 +22,14 @@ clip_plot <- function(plt, list_data,
     epsg <- paste("326", utm, sep="")
     return(epsg)
   }
-  
+
   #source("./R/get_epsg_from_utm.R")
   # get tile for the plot
   plt <- data.frame(t(plt), stringsAsFactors=F)
   #convert plots coordinates from character to numeric
   plt[["easting"]]<- as.numeric(plt[["easting"]])
   plt[["northing"]]<- as.numeric(plt[["northing"]])
-  
+
   tile <- paste(plt[["plt_e"]], plt[["plt_n"]], sep="_")
   tile <- grep(tile, list_data, value = TRUE)
   missed_plots <- list()
@@ -73,15 +73,17 @@ clip_plot <- function(plt, list_data,
       #check if the libraries required are installed in the virtual environment
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")
-      
-      h5_to_tif <- extract_hsi(f,
+      year = unlist(strsplit(f,split = "/FullSite/"))[[1]]
+      year = substr(year, nchar(year)-3, nchar(year))
+      h5_to_tif <- extract_hsi_brdf_corrected(f,
                                plt[1,1],
                                plt[["easting"]] - bff,
                                plt[["easting"]] + bff,
                                plt[["northing"]] - bff,
                                plt[["northing"]] + bff,
                                epsg,
-                               ras_dir = paste(outdir, "/hsi/", sep="")) #
+                               ras_dir = paste(outdir, "/brdf/", sep=""),
+                               year) #
       #ras_dir = './outdir/plots/hsi/')
     }
     }, error = function(e) {
