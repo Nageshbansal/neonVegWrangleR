@@ -587,4 +587,4 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     array2raster(ii, sol_zn.reshape([sol_zn.shape[0],sol_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_zn/"), epsg = int(refl_md['epsg']))
     
 
-extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense")
+#extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense")
