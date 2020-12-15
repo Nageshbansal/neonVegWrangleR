@@ -308,6 +308,7 @@ def calc_clip_index(clipExtent, h5Extent, xscale=1, yscale=1):
 #
     return ind_ext
 
+# full_path = "/orange/ewhite/NeonData/ABBY/DP1.30006.001/2017/FullSite/D16/2017_ABBY_1/L3/Spectrometer/Reflectance/NEON_D16_ABBY_DP3_547000_5065000_reflectance.h5"
 def extract_hsi(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir = './outdir/plots/hsi/'):
 #
     #print(itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg)
@@ -537,9 +538,9 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     aspect  = (aspect * pi) / 180
     sns_az  = (sns_az * pi) / 180
     sns_zn  = (sns_zn * pi) / 180
-    sol_az = (sol_az[0] * pi) / 180
-    sol_zn = (sol_zn[0] * pi) / 180
-    # topographic correction
+    sol_az = (sol_az * pi) / 180
+    sol_zn = (sol_zn * pi) / 180
+# topographic correction
     rel_az = aspect - sol_az
     cos_i = np.cos(sol_zn) * np.cos(slope) + np.sin(sol_zn) * np.sin(slope) * np.cos(rel_az)
     c1 =  np.cos(sol_zn) * np.cos(slope)
@@ -556,38 +557,38 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     hcp = np.zeros((subArray_rows, subArray_cols, len(rgb)), dtype=np.int16)
  #   
     #load info in multi-layer array
-    band_clean_dict = {}
-    band_clean_names = []
-    for i in range(len(rgb)):
-        band_clean_names.append("b" + str([i]) + "_refl_clean")
-        band_clean_dict[band_clean_names[i]] = np.squeeze(refl[:, :, [i]].astype(np.int16))
-        hcp[..., i] = band_clean_dict[band_clean_names[i]]
+#    band_clean_dict = {}
+#    band_clean_names = []
+#    for i in range(len(rgb)):
+#        band_clean_names.append("b" + str([i]) + "_refl_clean")
+#        band_clean_dict[band_clean_names[i]] = np.squeeze(refl[:, :, [i]].astype(np.int16))
+#        hcp[..., i] = band_clean_dict[band_clean_names[i]]
     #
     #
-    print(hcp.shape)
+#    print(hcp.shape)
    #save hcp into a tiff file [reflectance]
-    sub_meta = refl_md
-    itc_id =  str(int(year)) + "_"+ itc_id #+"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
-    ii = str(itc_id + ".tif")
+#    sub_meta = refl_md
+#    itc_id =  str(int(year)) + "_"+ itc_id #+"_" + str(int(itc_xmin)) + "_" + str(int(itc_ymin)) 
+#    ii = str(itc_id + ".tif")
     #ras_dir = wd+"/corrHSI"
-    print(hcp.shape)
-    array2raster(str(ii), hcp, sub_meta, clipExtent, ras_dir = str(ras_dir+"/hsi/"), epsg = int(refl_md['epsg']))
+#    print(hcp.shape)
+#    array2raster(str(ii), hcp, sub_meta, clipExtent, ras_dir = str(ras_dir+"/hsi/"), epsg = int(refl_md['epsg']))
     #save sensor and solar angles, slope and aspect for the same plot
     #print("slope:     " + slope.shape)
-    array2raster(ii, slope.reshape([slope.shape[0],slope.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/slope/"), epsg = int(refl_md['epsg']))
+#    array2raster(ii, slope.reshape([slope.shape[0],slope.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/slope/"), epsg = int(refl_md['epsg']))
     #print("aspect:     " + aspect.shape)
-    array2raster(ii, aspect.reshape([aspect.shape[0],aspect.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/aspect/"), epsg = int(refl_md['epsg']))
+#    array2raster(ii, aspect.reshape([aspect.shape[0],aspect.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/aspect/"), epsg = int(refl_md['epsg']))
     #print("sns_az:     " + sns_az.shape)
-    array2raster(ii, sns_az.reshape([sns_az.shape[0],sns_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_az/"), epsg = int(refl_md['epsg']))
+#    array2raster(ii, sns_az.reshape([sns_az.shape[0],sns_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_az/"), epsg = int(refl_md['epsg']))
     #print("sns_zn:     " + sns_zn.shape)
-    array2raster(ii, sns_zn.reshape([sns_zn.shape[0],sns_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_zn/"), epsg = int(refl_md['epsg']))
-    print(sol_az.shape)
-    sol_angle = [sol_az, sol_zn]
-    pd.DataFrame(sol_angle).to_csv(str(ras_dir+"/sol_az/"+year+"_"+ii))
+#    array2raster(ii, sns_zn.reshape([sns_zn.shape[0],sns_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_zn/"), epsg = int(refl_md['epsg']))
+#    print(sol_az.shape)
+#    sol_angle = [sol_az, sol_zn]
+#    pd.DataFrame(sol_angle).to_csv(str(ras_dir+"/sol_az/"+ii+".csv"))
     # 
-    # array2raster(ii, sol_az.reshape([sol_az.shape[0],sol_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_az/"), epsg = int(refl_md['epsg']))
-    # #print("sol_zn:     " + sol_zn.shape)
-    # array2raster(ii, sol_zn.reshape([sol_zn.shape[0],sol_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_zn/"), epsg = int(refl_md['epsg']))
+    array2raster(ii, sol_az.reshape([sol_az.shape[0],sol_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_az/"), epsg = int(refl_md['epsg']))
+    #print("sol_zn:     " + sol_zn.shape)
+    array2raster(ii, sol_zn.reshape([sol_zn.shape[0],sol_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_zn/"), epsg = int(refl_md['epsg']))
     # 
 
 #extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense")
