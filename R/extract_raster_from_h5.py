@@ -583,8 +583,8 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     #print("sns_zn:     " + sns_zn.shape)
     array2raster(ii, sns_zn.reshape([sns_zn.shape[0],sns_zn.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sns_zn/"), epsg = int(refl_md['epsg']))
 #    print(sol_az.shape)
-    sol_angle = [sol_az, sol_zn]
-    pd.DataFrame(sol_angle).to_csv(str(ras_dir+"/sol_az/"+ii+".csv"))
+    #sol_angle = [sol_az, sol_zn]
+    #pd.DataFrame(sol_angle).to_csv(str(ras_dir+"/sol_az/"+ii+".csv"))
     # 
     array2raster(ii, sol_az.reshape([sol_az.shape[0],sol_az.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/sol_az/"), epsg = int(refl_md['epsg']))
     #print("sol_zn:     " + sol_zn.shape)
