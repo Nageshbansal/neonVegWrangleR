@@ -634,4 +634,6 @@ def extract_elevation_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_
     subInd['yMax'] = int(subInd['yMax'])
     subInd['yMin'] = int(subInd['yMin'])
     elevation = elevation[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
-    array2raster(ii, elevation.reshape([elevation.shape[0],elevation.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/elevation/"), epsg = int(refl_md['epsg']))
+    itc_id = str(int(year)) + "_"+ itc_id 
+    ii = str(itc_id + ".tif")
+    array2raster(ii, elevation.reshape([elevation.shape[0],elevation.shape[1],1]), refl_md, clipExtent, ras_dir = str(ras_dir+"/elevation/"), epsg = int(refl_md['epsg']))
