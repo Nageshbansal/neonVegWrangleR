@@ -191,6 +191,8 @@ def h5refl2array(full_path, epsg):
     sns_zn = hdf5_file[sitename]['Reflectance/Metadata/to-sensor_zenith_angle']
     slope = hdf5_file[sitename]['Reflectance/Metadata/Ancillary_Imagery/Slope']
     aspect = hdf5_file[sitename]['Reflectance/Metadata/Ancillary_Imagery/Aspect']
+    elevation = hdf5_file[sitename]['Reflectance/Metadata/Ancillary_Imagery/Smooth_Surface_Elevation']
+
 #    
     #get solar angles as array to leverage flightpaths mosaic
     flightpaths = hdf5_file[sitename]['Reflectance/Metadata/Ancillary_Imagery/Data_Selection_Index'].value
@@ -223,7 +225,7 @@ def h5refl2array(full_path, epsg):
     refl_md['ext_dict']['yMax'] = yMax
     hdf5_file.close
 #
-    return refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect
+    return refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect, elevation
 
 
 def stack_subset_bands(reflArray, reflArray_metadata, bands, clipIndex):
@@ -592,3 +594,44 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     # 
 
 #extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense")
+def extract_elevation_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, itc_ymax, epsg, ras_dir, year, ross="thick", li="dense"):
+    from pathlib import Path
+    import numpy as np
+    import h5py
+    import gdal, osr
+    import matplotlib.pyplot as plt
+    import sys
+    import ogr, os
+    import math
+    import pandas as pd
+    from math import pi
+    import random
+    import string
+    import warnings
+    warnings.filterwarnings("ignore")
+    # try:
+    refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect, elevation = h5refl2array(full_path, epsg = epsg)
+    rgb = np.r_[0:425]
+    rgb = np.delete(rgb, np.r_[419:426])
+    rgb = np.delete(rgb, np.r_[281:313])
+    rgb = np.delete(rgb, np.r_[191:211])
+    xmin, xmax, ymin, ymax = refl_md['extent']
+    #   
+    # itc_xmin = xmin
+    # itc_ymin = ymin
+    # itc_ymax = ymax
+    # itc_xmax = xmax
+    #
+    clipExtent = {}
+    clipExtent['xMin'] = itc_xmin
+    clipExtent['yMin'] = itc_ymin
+    clipExtent['yMax'] = itc_ymax
+    clipExtent['xMax'] = itc_xmax
+    print(clipExtent)
+    subInd = calc_clip_index(clipExtent, refl_md['ext_dict'])
+    subInd['xMax'] = int(subInd['xMax'])
+    subInd['xMin'] = int(subInd['xMin'])
+    subInd['yMax'] = int(subInd['yMax'])
+    subInd['yMin'] = int(subInd['yMin'])
+    elevation = elevation[(subInd['yMin']):subInd['yMax'], (subInd['xMin']):subInd['xMax']]
+    array2raster(ii, elevation.reshape([elevation.shape[0],elevation.shape[1],1]), sub_meta, clipExtent, ras_dir = str(ras_dir+"/elevation/"), epsg = int(refl_md['epsg']))
