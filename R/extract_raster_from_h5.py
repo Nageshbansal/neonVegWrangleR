@@ -499,7 +499,7 @@ def extract_hsi_and_brdf_data(full_path, itc_id, itc_xmin, itc_xmax, itc_ymin, i
     import warnings
     warnings.filterwarnings("ignore")
     # try:
-    refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect = h5refl2array(full_path, epsg = epsg)
+    refl, refl_md, sitename, wavelengths, sol_az, sol_zn, sns_az, sns_zn, slope, aspect, elevation = h5refl2array(full_path, epsg = epsg)
     rgb = np.r_[0:425]
     rgb = np.delete(rgb, np.r_[419:426])
     rgb = np.delete(rgb, np.r_[281:313])
