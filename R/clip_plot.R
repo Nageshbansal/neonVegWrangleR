@@ -1,4 +1,4 @@
-#' create a shapefile out of vegetation structure data with lat/lon coordinates
+#' this function is used to clip plots around NEON vegetation structure or CFC
 #'
 #'
 #' @inheritParams str_detect
@@ -9,9 +9,8 @@
 #' @import sf, reticulate, stringr
 clip_plot <- function(plt, list_data,
                       which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python",
-                      bff=20,
+                      bff=12,
                       outdir = "////orange/ewhite/s.marconi/brdf_classification/"
-                      #outdir = "///orange/ewhite/s.marconi/brdf_traits//plots_hsi_corrected/"
 ){
   library(lidR)
   library(stringr)
@@ -34,8 +33,10 @@ clip_plot <- function(plt, list_data,
   tile <- grep(tile, list_data, value = TRUE)
   missed_plots <- list()
   #in case of multiple data products per neon product
-  for(f in tile){
-    tryCatch({
+  for(f in tile[1]){
+   tryCatch({
+     year = unlist(strsplit(f,split = "/FullSite/"))[[1]]
+     year = substr(year, nchar(year)-3, nchar(year))
     #load raster or las file
     if(substr(f, nchar(f)-4+1, nchar(f))==".tif"){
       prd = substr(f, nchar(f)-8+1, nchar(f)-4)
@@ -50,7 +51,7 @@ clip_plot <- function(plt, list_data,
       tif <- raster::crop(f, e)
       #and save
       raster::writeRaster(tif,  paste(outdir, prd, "/",
-                                      plt[1,1], ".tif", sep=""), overwrite=TRUE)
+                                      plt[1,1], "_", year, ".tif", sep=""), overwrite=TRUE)
     }else if(substr(f, nchar(f)-4+1, nchar(f))==".laz"){
       #skip files in metadata
       if(!str_detect(f, "Metadata")){
@@ -71,19 +72,16 @@ clip_plot <- function(plt, list_data,
       #convert h5 into a tif for the extent of the plot using python
       use_python(which_python, required = T)
       #check if the libraries required are installed in the virtual environment
-      setwd("//blue/ewhite/s.marconi/Chapter3/neonVegWrangleR")
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")
-      year = unlist(strsplit(f,split = "/FullSite/"))[[1]]
-      year = substr(year, nchar(year)-3, nchar(year))
-      h5_to_tif <- extract_hsi_brdf_corrected(f,
-                               plt[1,1],
+      h5_to_tif <- extract_hsi_and_brdf_data(f,
+                               paste(plt[1,1], plt[1,2], sep="_"),
                                plt[["easting"]] - bff,
                                plt[["easting"]] + bff,
                                plt[["northing"]] - bff,
                                plt[["northing"]] + bff,
                                epsg,
-                               ras_dir = paste(outdir, "/brdf/", sep=""),
+                               ras_dir = paste(outdir, "/", sep=""),
                                year = as.character(year)) #
       #ras_dir = './outdir/plots/hsi/')
     }

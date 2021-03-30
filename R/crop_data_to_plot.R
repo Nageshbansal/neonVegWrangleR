@@ -7,16 +7,17 @@
 #' @examples apply(plots, 1, clip_plot, list_data, bff=bff)
 #' @importFrom magrittr "%>%"
 #' @import sf, reticulate
-crop_data_to_plot <- function(plt, dtprd= c( "DP3.30015.001", "DP3.30006.001"#,"DP3.30010.001", "DP1.30003.001" ,
-                                       #"DP3.30024.001",  "DP3.30025.001",  "DP3.30015.001",
-                                      ),
+crop_data_to_plot <- function(plt, dtprd= "DP3.30006.001"
+                              # ,"DP3.30010.001","DP3.30015.001" #, "DP1.30003.001"
+                              #, "DP3.30024.001",  "DP3.30025.001",  "DP3.30015.001",
                               #path = #"//orange/ewhite/s.marconi/brdf_traits/corrHSI/"
-                                path = "//orange/ewhite/NeonData/"
-                               #"//orange/ewhite/s.marconi/AOP_Chapter3/" #path = "//orange/idtrees-collab/hsi_brdf_corrected/corrHSI/", #path = "./outdir/tiles/",
+                              , path = "//orange/ewhite/NeonData/"
                               , which_python = "/home/s.marconi/.conda/envs/quetzal3/bin/python"
-                              , target_year = 2019
-                              , bff=20
-                              ){
+                              , target_year = 2018
+                              , bff=12
+                              , tasks = 1
+                              , parallelized = F
+){
   #get path of files in
   library(tidyverse)
   library(parallel)
@@ -24,10 +25,8 @@ crop_data_to_plot <- function(plt, dtprd= c( "DP3.30015.001", "DP3.30006.001"#,"
   library(neonUtilities)
   library(sf)
   full_list <- list.files(path = path, full.names = T, #paste(path, dataproduct, sep="")
-                          pattern = ".tif|.h5|.laz", recursive = T)
+                          pattern = ".tif|.h5", recursive = T)
   for(dataproduct in dtprd){
-    # list_data <- list.files(path = path, full.names = T, #paste(path, dataproduct, sep="")
-    #                         pattern = ".tif|.h5|.laz", recursive = T)
 
     paths_to_loop <- stringr::str_detect(full_list, dataproduct)
     list_data <- full_list[paths_to_loop]
@@ -35,9 +34,9 @@ crop_data_to_plot <- function(plt, dtprd= c( "DP3.30015.001", "DP3.30006.001"#,"
     list_data <- list_data[paths_to_loop]
     #list_data =   full_list
 
-    plots <- dplyr::select(plt, plotID, siteID, utmZone, easting, northing)
-    plots <- plots %>% group_by(plotID, siteID, utmZone) %>% summarize_if(is.numeric, mean)
-    colnames(plots)[4:5] <- c("easting", "northing")
+    plots <- dplyr::select(plt, plotID, subplotID, siteID, utmZone, easting, northing)
+    plots <- plots %>% group_by(plotID, subplotID, siteID, utmZone) %>% summarize_if(is.numeric, mean)
+    colnames(plots)[5:6] <- c("easting", "northing")
     plots <- plots[complete.cases(plots),]
     plots$plt_e <- as.integer(plots$easting / 1000) * 1000
     plots$plt_n <- as.integer(plots$northing / 1000) * 1000
@@ -77,14 +76,20 @@ crop_data_to_plot <- function(plt, dtprd= c( "DP3.30015.001", "DP3.30006.001"#,"
 
     #remove tiles from sites not included in the dataset
     paths_to_loop <- stringr::str_detect(list_data,
-                      paste(unique(plots[["siteID"]]), collapse = '|'))
+                                         paste(unique(plots[["siteID"]]), collapse = '|'))
     list_data <- list_data[paths_to_loop]
     #apply the clipping function to each plot in the dataset
     print(paste("extracting plots information for data in:", dataproduct))
     #pbapply(plots, 1, clip_plot, list_data, which_python = which_python, bff=bff)
-    cl= makeCluster(16)
-    parApply(cl = cl, plots, 1, clip_plot, list_data, which_python = which_python, bff=bff)
-    stopCluster(cl)
+    #apply(plots, 1, clip_plot, list_data, which_python = which_python, bff=bff)
+    if(parallelized == T){
+      cl= makeCluster(tasks)
+      parApply(cl = cl, plots, 1, clip_plot, list_data, which_python = which_python, bff=bff)
+      stopCluster(cl)
+    }else{
+      apply(plots, 1, clip_plot, list_data, which_python = which_python, bff=bff)
+
+    }
   }
 }
 

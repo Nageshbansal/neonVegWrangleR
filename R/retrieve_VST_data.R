@@ -8,17 +8,48 @@
 #' @examples
 #' @importFrom magrittr "%>%"
 #'
-retrieve_VST_data <- function(site = "all", start = NA, enddate = NA){
-  
+retrieve_VST_data <- function(site = "all", start = NA, enddate = NA, method = "shp", pt = NA){
+
   # load NEON woody vegetation structure data product into R
   vst <- neonUtilities::loadByProduct("DP1.10098.001", check.size=F,
                                       site=site, start, enddate)
-  
+
   # calculate UTM coordinates of vst entries based on azimuth and distance
   # measurements from plot reference points
-  vst <- calc_tree_geolocations(vst, dataProd = "vst_mappingandtagging")
+  if(method == "geoneon"){
+    vst_ <- calc_tree_geolocations(vst, dataProd = "vst_mappingandtagging")
+  }else if(method == "shp"){
+    vst$vst_mappingandtagging <- retrieve_coords_itc(vst$vst_mappingandtagging)
+    #get latitude and longitude of all points
+    #vst$vst_mappping_latlon <- get_lat_long(vst$vst_mappingandtagging)
+  }
+  # }else if(method == "all"){
+  #   vst2 <- calc_tree_geolocations(vst, dataProd = "vst_mappingandtagging")
+  #   vst$vst_mappingandtagging <- retrieve_coords_itc(vst$vst_mappingandtagging)
+  #   #get latitude and longitude of all points
+  #   vst$vst_mappping_latlon <- get_lat_long(vst$vst_mappingandtagging)
+  #   colnames(vst$vst_mappping_latlon)
+  #   vst2_coords = vst2$vst_mappingandtagging %>% select(individualID, northing, easting, adjDecimalLatitude, adjDecimalLongitude)
+  #   colnames(vst2_coords)[2:3]<- c("adjNorthing", "adjEasting")
+  #   vst$vst_mappping_latlon = left_join(vst$vst_mappping_latlon, vst2_coords)
+  #   vst$vst_mappping_latlon = unique(vst$vst_mappping_latlon)
+  # }
 
-  return(vst)
+  # tmp_mapping_and_tag = vst$vst_mappping_latlon %>% select(-one_of("uid"))
+  attributes = vst$vst_apparentindividual %>%
+    select(uid, individualID, eventID, tagStatus, growthForm, plantStatus, stemDiameter,
+           measurementHeight, height,baseCrownHeight, breakHeight,
+           breakDiameter, maxCrownDiameter, ninetyCrownDiameter,
+           canopyPosition, shape, basalStemDiameter,
+           basalStemDiameterMsrmntHeight, maxBaseCrownDiameter, ninetyBaseCrownDiameter)
+  colnames(vst$vst_mappingandtagging)[4] = "tagEventID"
+  csv_vst = inner_join(vst$vst_mappingandtagging, attributes, by="individualID") %>% unique
+  vst_$vst_apparentindividual %>% nrow()
+  #colnames(vst$vst_mappingandtagging)[35:36] <- c("plotEasting", "plotNorthing")
+
+  pt = "./outdir/field_data/neon_vst_data_022021.csv"
+  if(!is.na(pt)) write_csv(csv_vst, pt)
+  return(csv_vst)
 }
 
 
