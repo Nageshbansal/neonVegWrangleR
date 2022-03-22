@@ -8,10 +8,17 @@
 #' @importFrom magrittr "%>%"
 #'
 #'
-retrieve_cfc_data <- function(site = "all", start = 2017, enddate = 2020,
-                              unwanted = c("validation","variables", "cfc_elements")){
+retrieve_cfc_data <- function(
+  site = "all"
+  ,
+  start = NA
+  ,
+  enddate = NA
+  ,
+  unwanted = c("validation","variables")
+  ){
   # download foliar traits data
-  fol_fc <- neonUtilities::loadByProduct("DP1.10053.001", check.size=F,
+  fol_fc <- neonUtilities::loadByProduct("DP1.10026.001", check.size=F,
                                          site=site,  start = start, enddate = enddate)
 
   # for joining only the data we are interested in and cleaning the putput, hardcoding the columns we consider of interest
@@ -48,5 +55,8 @@ retrieve_cfc_data <- function(site = "all", start = 2017, enddate = 2020,
                         list(df_combined[["cfc_fieldData"]], df_combined[["cfc_carbonNitrogen"]],
                              df_combined[["cfc_chlorophyll"]],df_combined[["cfc_lignin"]],
                              df_combined[["cfc_LMA"]], df_combined[["cfc_elements"]]))
-  return(df_combined)
+
+  field_dat = left_join(df_combined, fol_fc$cfc_fieldData)
+  return(field_dat)
 }
+

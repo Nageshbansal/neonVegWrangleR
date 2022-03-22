@@ -74,7 +74,7 @@ clip_plot <- function(plt, list_data,
       #check if the libraries required are installed in the virtual environment
       h5py <- import("h5py")
       source_python("./R/extract_raster_from_h5.py")
-      h5_to_tif <- extract_hsi_and_brdf_data(f,
+      h5_to_tif <- extract_elevation_data(f,
                                paste(plt[1,1], plt[1,2], sep="_"),
                                plt[["easting"]] - bff,
                                plt[["easting"]] + bff,

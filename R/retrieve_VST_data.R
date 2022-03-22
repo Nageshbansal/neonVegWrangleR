@@ -8,17 +8,26 @@
 #' @examples
 #' @importFrom magrittr "%>%"
 #'
-retrieve_VST_data <- function(site = "all", start = NA, enddate = NA, method = "shp", pt = NA){
+#'  pt = "./outdir/field_data/neon_vst_data_geoNeon_2022.csv"
+
+retrieve_VST_data <- function(site = "all"
+                              , start = NA
+                              , enddate = NA
+                              , method = "shp"
+                              , pt = NA
+                              ){
 
   # load NEON woody vegetation structure data product into R
   vst <- neonUtilities::loadByProduct("DP1.10098.001", check.size=F,
-                                      site=site, start, enddate)
+                                      site=site) #, "2021-01", "2022-01")
 
+  vst$vst_apparentindividual %>% dim
   # calculate UTM coordinates of vst entries based on azimuth and distance
   # measurements from plot reference points
-  if(method == "geoneon"){
-    vst_ <- calc_tree_geolocations(vst, dataProd = "vst_mappingandtagging")
-  }else if(method == "shp"){
+  # if(method == "geoneon"){
+  #   vst <- calc_tree_geolocations(vst, dataProd = "vst_mappingandtagging")
+  # }else
+  if(method == "shp"){
     vst$vst_mappingandtagging <- retrieve_coords_itc(vst$vst_mappingandtagging)
     #get latitude and longitude of all points
     #vst$vst_mappping_latlon <- get_lat_long(vst$vst_mappingandtagging)
@@ -43,13 +52,11 @@ retrieve_VST_data <- function(site = "all", start = NA, enddate = NA, method = "
            canopyPosition, shape, basalStemDiameter,
            basalStemDiameterMsrmntHeight, maxBaseCrownDiameter, ninetyBaseCrownDiameter)
   colnames(vst$vst_mappingandtagging)[4] = "tagEventID"
-  csv_vst = inner_join(vst$vst_mappingandtagging, attributes, by="individualID") %>% unique
-  vst_$vst_apparentindividual %>% nrow()
+  csv_vst = left_join( attributes, vst$vst_mappingandtagging, by="individualID") %>% unique
+  vst$vst_apparentindividual %>% nrow()
   #colnames(vst$vst_mappingandtagging)[35:36] <- c("plotEasting", "plotNorthing")
 
-  pt = "./outdir/field_data/neon_vst_data_022021.csv"
   if(!is.na(pt)) write_csv(csv_vst, pt)
-  return(csv_vst)
+  return(list(vst = csv_vst, raw_dat = vst))
 }
-
 
