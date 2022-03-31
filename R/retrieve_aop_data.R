@@ -22,8 +22,8 @@ retrieve_aop_data <- function(data, year = 2019,
   options(scipen = 999)
   # extract information needed to get AOP tiles
   coords_for_tiles <- data %>%
-    dplyr::select(plotID, siteID, utmZone, plotEasting, plotNorthing, year)
-  colnames(coords_for_tiles)[4:5] <- c("easting", "northing")
+    dplyr::select(plotID, siteID, utmZone, easting, northing, year)
+  #colnames(coords_for_tiles)[4:5] <- c("easting", "northing")
   # collect years per plot per date
   #year = substr(year, 1, 4)
   #coords_for_tiles <- cbind.data.frame(coords_for_tiles, year)
@@ -43,7 +43,7 @@ retrieve_aop_data <- function(data, year = 2019,
   for(ii in 1:nrow(tiles)){
     for(prd in products){
       tryCatch({
-        
+
         #elevation
         neonUtilities::byTileAOP(prd,
                                  site = tiles[ii, "siteID"],
